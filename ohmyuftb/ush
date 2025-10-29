@@ -1,0 +1,179 @@
+#!/bin/bash
+# ===========================================
+# 🌀 UFTB Shell Designer (Oh My UFTB)
+# Author : Al Riad (BrightX)
+# Version: 6.5 (Interactive & Smart Shell)
+# ===========================================
+
+# --- 🎨 Color Palette ---
+RED='\033[1;31m'; GREEN='\033[1;32m'; YELLOW='\033[1;33m'
+BLUE='\033[1;34m'; MAGENTA='\033[1;35m'; CYAN='\033[1;36m'
+WHITE='\033[1;37m'; GRAY='\033[90m'; RESET='\033[0m'
+
+CONFIG_FILE="$HOME/.ushrc"
+PLUGIN_DIR="$HOME/ush/plugins"
+HISTORY_FILE="$HOME/.ush_history"
+
+# --- 🧩 Install Required Packages ---
+install_pkg() {
+  if ! command -v "$1" &>/dev/null; then
+    echo -e "${YELLOW}📦 Installing $1...${RESET}"
+    if [[ "$(uname)" == "Darwin" ]]; then
+      if ! command -v brew &>/dev/null; then
+        echo -e "${RED}🍺 Homebrew not found, installing...${RESET}"
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      fi
+      brew install "$1" >/dev/null 2>&1
+    elif command -v apt &>/dev/null; then
+      sudo apt update -y >/dev/null 2>&1
+      sudo apt install -y "$1" >/dev/null 2>&1
+    fi
+  fi
+}
+
+# --- 🚀 First-Time Setup ---
+if [ ! -f "$CONFIG_FILE" ]; then
+  install_pkg "figlet"
+  install_pkg "lolcat"
+
+  clear
+  echo -e "${BLUE}=====================================================${RESET}"
+  figlet -f slant "Oh My UFTB" | lolcat
+  echo -e "${CYAN}Universal Fancy Terminal Beautifier${RESET}"
+  echo -e "${YELLOW}By Al Riad ${RESET}"
+  echo -e "${BLUE}=====================================================${RESET}\n"
+
+  echo -e "${CYAN}╔══════════════════════════════════════════════════════════════╗${RESET}"
+  echo -e "${CYAN}║${RESET}   🌀 ${MAGENTA}Oh My UFTB — Universal Fancy Terminal Beautifier${RESET}"
+  echo -e "${CYAN}║${RESET}   🌈 ${GREEN}Author:${RESET}       Al Riad "
+  echo -e "${CYAN}║${RESET}   🧠 ${YELLOW}Version:${RESET}      1.0.0 LTS (Interactive)"
+  echo -e "${CYAN}║${RESET}   📅 ${BLUE}Release Date:${RESET}  October 2025"
+  echo -e "${CYAN}║${RESET}   💻 ${CYAN}Compatible:${RESET}   macOS · Kali · Ubuntu · WSL"
+  echo -e "${CYAN}╚══════════════════════════════════════════════════════════════╝${RESET}\n"
+
+  echo -ne "${MAGENTA}🔧 Setting up modules:${RESET} "
+  for i in {1..5}; do echo -ne "█"; sleep 0.2; done
+  echo -e " ${GREEN}Done!${RESET}\n"
+
+  echo -e "\n${WHITE}🎯 Choose OS Icon:${RESET}"
+  echo -e "1)  Windows\n2)  macOS\n3)  Kali Linux\n4)  Ubuntu\n5)  Default"
+  read -p "Choice [1-5]: " icon
+  case $icon in
+    1) USER_ICON="";;
+    2) USER_ICON="";;
+    3) USER_ICON="";;
+    4) USER_ICON="";;
+    *) USER_ICON="";;
+  esac
+
+  echo -e "\n${WHITE}🎨 Choose Color Theme:${RESET}"
+  echo -e "1) ${GREEN}Green${RESET}\n2) ${BLUE}Blue${RESET}\n3) ${YELLOW}Yellow${RESET}\n4) ${MAGENTA}Purple${RESET}"
+  read -p "Choice [1-4]: " theme
+  case $theme in
+    1) THEME="green";;
+    2) THEME="blue";;
+    3) THEME="yellow";;
+    4) THEME="purple";;
+    *) THEME="cyan";;
+  esac
+
+  mkdir -p "$PLUGIN_DIR"
+  echo "USER_ICON='$USER_ICON'" > "$CONFIG_FILE"
+  echo "THEME='$THEME'" >> "$CONFIG_FILE"
+fi
+
+source "$CONFIG_FILE"
+
+# --- 🌈 Theme Setter ---
+set_color() {
+  case "$THEME" in
+    green) echo -ne "$GREEN";;
+    blue) echo -ne "$BLUE";;
+    yellow) echo -ne "$YELLOW";;
+    purple) echo -ne "$MAGENTA";;
+    *) echo -ne "$CYAN";;
+  esac
+}
+
+# --- 📂 Enhanced 'ls' Command ---
+show_ls_icons() {
+  echo ""
+  for item in *; do
+    if [ -d "$item" ]; then
+      echo -e "${BLUE}📁 $item${RESET}"
+    elif [ -x "$item" ]; then
+      echo -e "${GREEN}⚙️  $item${RESET}"
+    else
+      echo -e "${WHITE}📄 $item${RESET}"
+    fi
+  done
+  echo ""
+}
+
+# --- 💾 Persistent History ---
+HISTFILE="$HISTORY_FILE"
+HISTSIZE=1000
+SAVEHIST=1000
+touch "$HISTORY_FILE"
+
+bind 'TAB:menu-complete'
+bind '"\e[A": history-search-backward'
+bind '"\e[B": history-search-forward'
+
+# --- 💡 Smart Auto-Suggestions ---
+suggest() {
+  local input="$1"
+  local match
+  match=$(grep -E "^$input" "$HISTORY_FILE" | tail -n 1)
+  if [ -n "$match" ] && [ "$match" != "$input" ]; then
+    echo -ne "\r${GRAY}${match}${RESET}"
+  fi
+}
+
+# --- 🖍️ Colored Command Wrappers ---
+cat() { command cat "$@" | lolcat; }
+grep() { command grep --color=always "$@"; }
+tail() { command tail "$@" | lolcat; }
+
+# --- 🎉 Welcome Screen ---
+clear
+figlet "Oh My UFTB" | lolcat
+echo -e "${MAGENTA}✨ Welcome, $USER! Theme: ${THEME}${RESET}"
+echo -e "${YELLOW}Press 'help' to view available commands.${RESET}\n"
+sleep 1
+
+# --- 🧠 Main Interactive Loop ---
+while true; do
+  COLOR_CODE=$(set_color)
+  DATE=$(date +"%Y-%m-%d %H:%M:%S")
+  HOSTNAME=$(hostname)
+  echo -ne "${COLOR_CODE}${USER_ICON} ${USER}@${HOSTNAME} [${DATE}] › ${RESET}"
+
+  read -e CMD
+  echo "$CMD" >> "$HISTORY_FILE"
+
+  case "$CMD" in
+    exit)
+      echo -e "${RED}👋 Goodbye from Oh My UFTB! Stay Fancy.${RESET}"
+      break ;;
+    ls)
+      show_ls_icons ;;
+    clear)
+      clear ;;
+    reload)
+      source "$CONFIG_FILE"
+      echo -e "${GREEN}🔄 Config reloaded successfully.${RESET}" ;;
+    plugins)
+      echo -e "${CYAN}🔌 Available plugins:${RESET}"
+      ls "$PLUGIN_DIR" ;;
+    help)
+      echo -e "${YELLOW}📖 Available Commands:${RESET}"
+      echo -e "  ${GREEN}ls${RESET}        → List files with icons"
+      echo -e "  ${GREEN}clear${RESET}     → Clear terminal screen"
+      echo -e "  ${GREEN}reload${RESET}    → Reload UFTB configuration"
+      echo -e "  ${GREEN}plugins${RESET}   → Show available plugins"
+      echo -e "  ${GREEN}exit${RESET}      → Quit the shell" ;;
+    *)
+      if [ -n "$CMD" ]; then eval "$CMD"; fi ;;
+  esac
+done
