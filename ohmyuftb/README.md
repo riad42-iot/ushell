@@ -13,8 +13,17 @@ Make your shell vibrant, smart, and fun — with icons, colors, and dynamic prom
 
 ## ⚙️ Installation
 ```bash
-git clone https://github.com/<riad42-iot>/ohmyuftb.git
-cd ohmyuftb
+git clone https://github.com/riad42-iot/ushell.git
+cd /ushell/ohmyuftb
 chmod +x ush
 ./ush
+````
+
+## ⚙️ -------------------------------For Global access-----------
+````bash
+#for unix kernel system
+sudo mv ush /usr/local/bin/ush
+#it will takes password your usename password 
+
+````
 
